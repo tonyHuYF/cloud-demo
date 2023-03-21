@@ -18,8 +18,8 @@ public class OrderController {
     private OrderService orderService;
 
     @GetMapping("/{id}")
-    public String getOrderByUserId(@PathVariable Long id){
-        Order order = orderService.getById(id);
+    public String getOrderWithUser(@PathVariable Long id) {
+        Order order = orderService.getOrderWithUser(id);
         return JSON.toJSONString(order);
     }
 }
