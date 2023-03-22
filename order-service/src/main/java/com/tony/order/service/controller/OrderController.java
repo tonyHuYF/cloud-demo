@@ -1,6 +1,5 @@
 package com.tony.order.service.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.tony.order.service.domain.Order;
 import com.tony.order.service.service.OrderService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +17,8 @@ public class OrderController {
     private OrderService orderService;
 
     @GetMapping("/{id}")
-    public String getOrderWithUser(@PathVariable Long id) {
+    public Order getOrderWithUser(@PathVariable Long id) {
         Order order = orderService.getOrderWithUser(id);
-        return JSON.toJSONString(order);
+        return order;
     }
 }
