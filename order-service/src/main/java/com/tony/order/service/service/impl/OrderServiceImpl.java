@@ -1,9 +1,9 @@
 package com.tony.order.service.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.tony.order.service.client.UserClient;
+import com.tony.feign.client.UserClient;
+import com.tony.feign.domain.User;
 import com.tony.order.service.domain.Order;
-import com.tony.order.service.domain.User;
 import com.tony.order.service.mapper.OrderMapper;
 import com.tony.order.service.service.OrderService;
 import org.springframework.stereotype.Service;
