@@ -141,6 +141,7 @@
         <module>user-service</module>
         <module>euraka</module>
         <module>feign-api</module>
+        <module>gateway</module>
     </modules>
 
 </project>

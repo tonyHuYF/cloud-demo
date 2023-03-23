@@ -3,10 +3,7 @@ package com.tony.user.service.controller;
 import com.tony.user.service.config.PatternProperties;
 import com.tony.user.service.domain.User;
 import com.tony.user.service.service.UserService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -23,7 +20,7 @@ public class UserController {
     private PatternProperties patternProperties;
 
     @GetMapping("/prop")
-    public PatternProperties patternProperties(){
+    public PatternProperties patternProperties() {
         return patternProperties;
     }
 
@@ -33,7 +30,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable Long id) {
+    public User getById(@PathVariable Long id, @RequestHeader(value = "Truth", required = false) String truth) {
+        System.out.println(truth);
         User user = userService.getById(id);
         return user;
     }
