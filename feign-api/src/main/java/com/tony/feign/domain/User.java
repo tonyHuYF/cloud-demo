@@ -1,4 +1,4 @@
-package com.tony.order.service.domain;
+package com.tony.feign.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

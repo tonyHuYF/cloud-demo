@@ -1,4 +1,4 @@
-package com.tony.order.service.config;
+package com.tony.feign.config;
 
 import feign.Logger;
 import org.springframework.context.annotation.Bean;

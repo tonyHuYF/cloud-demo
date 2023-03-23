@@ -1,6 +1,7 @@
-package com.tony.order.service.client;
+package com.tony.feign.client;
 
-import com.tony.order.service.domain.User;
+
+import com.tony.feign.domain.User;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
