@@ -142,6 +142,7 @@
         <module>euraka</module>
         <module>feign-api</module>
         <module>gateway</module>
+        <module>hotel-service</module>
     </modules>
 
 </project>
