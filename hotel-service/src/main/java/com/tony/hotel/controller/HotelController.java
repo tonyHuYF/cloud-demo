@@ -1,6 +1,7 @@
 package com.tony.hotel.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.tony.hotel.constants.HotelConstants;
 import com.tony.hotel.domain.Hotel;
@@ -13,6 +14,8 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
@@ -20,6 +23,13 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/hotel")
@@ -161,6 +172,133 @@ public class HotelController {
         client.bulk(request, RequestOptions.DEFAULT);
 
         return "success";
+    }
+
+
+    @GetMapping("/match/all")
+    public String matchAll() throws IOException {
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(HttpHost.create("http://localhost:9200")));
+
+        SearchRequest request = new SearchRequest("hotel");
+
+        request.source().query(QueryBuilders.matchAllQuery());
+
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        handleResponse(response);
+
+        return "success";
+    }
+
+    @GetMapping("/match")
+    public String match() throws IOException {
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(HttpHost.create("http://localhost:9200")));
+
+        SearchRequest request = new SearchRequest("hotel");
+
+        request.source().query(QueryBuilders.matchQuery("all", "北京"));
+
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        handleResponse(response);
+
+        return "success";
+    }
+
+    @GetMapping("/bool")
+    public String bool() throws IOException {
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(HttpHost.create("http://localhost:9200")));
+
+        SearchRequest request = new SearchRequest("hotel");
+
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+
+        boolQuery.must().add(QueryBuilders.termQuery("city", "上海"));
+
+        boolQuery.filter().add(QueryBuilders.rangeQuery("price").lte("200"));
+
+        request.source().query(boolQuery);
+
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        handleResponse(response);
+
+        return "success";
+    }
+
+    @GetMapping("/page")
+    public String page() throws IOException {
+
+        int pageNum = 2;
+        int pageSize = 5;
+
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(HttpHost.create("http://localhost:9200")));
+
+        SearchRequest request = new SearchRequest("hotel");
+
+        request.source().query(QueryBuilders.matchAllQuery());
+
+        request.source().sort("price", SortOrder.ASC);
+
+        request.source().from((pageNum - 1) * pageSize).size(pageSize);
+
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        handleResponse(response);
+
+        return "success";
+    }
+
+    @GetMapping("/high/light")
+    public String highLight() throws IOException {
+
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(HttpHost.create("http://localhost:9200")));
+
+        SearchRequest request = new SearchRequest("hotel");
+
+        request.source().query(QueryBuilders.matchQuery("all", "如家"));
+
+        request.source().highlighter(new HighlightBuilder().field("name").requireFieldMatch(false));
+
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        handleResponse(response);
+
+        return "success";
+    }
+
+    private void handleResponse(SearchResponse response) {
+        SearchHits searchHits = response.getHits();
+
+        long total = searchHits.getTotalHits().value;
+
+        System.out.println("======共搜索到:" + total + "条======");
+
+        SearchHit[] hits = searchHits.getHits();
+
+        for (SearchHit hit : hits) {
+            String json = hit.getSourceAsString();
+            HotelDoc hotelDoc = JSON.parseObject(json, HotelDoc.class);
+
+            //处理高亮
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+
+            if (ObjectUtil.isNotEmpty(highlightFields)) {
+                HighlightField field = highlightFields.get("name");
+
+                if (ObjectUtil.isNotEmpty(field)) {
+                    String name = field.getFragments()[0].string();
+                    hotelDoc.setName(name);
+                }
+            }
+
+            System.out.println(hotelDoc);
+        }
     }
 
     @GetMapping("/one")
