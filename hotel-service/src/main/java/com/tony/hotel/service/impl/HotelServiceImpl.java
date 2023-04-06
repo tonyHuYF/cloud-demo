@@ -96,6 +96,8 @@ public class HotelServiceImpl extends ServiceImpl<HotelMapper, Hotel>
     public Map<String, List<String>> filters() throws IOException {
         SearchRequest request = new SearchRequest("hotel");
 
+        request.source().size(0);
+
         request.source().aggregation(AggregationBuilders.terms("brandAgg").field("brand").size(100));
         request.source().aggregation(AggregationBuilders.terms("cityAgg").field("city").size(100));
         request.source().aggregation(AggregationBuilders.terms("starNameAgg").field("starName").size(100));
