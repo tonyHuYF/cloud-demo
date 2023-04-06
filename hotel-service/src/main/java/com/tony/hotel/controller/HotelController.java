@@ -33,8 +33,8 @@ public class HotelController {
     }
 
     @PostMapping("/filters")
-    public Map<String, List<String>> filters() throws IOException {
-        Map<String, List<String>> result = hotelService.filters();
+    public Map<String, List<String>> filters(@RequestBody QueryParam param) throws IOException {
+        Map<String, List<String>> result = hotelService.filters(param);
         return result;
     }
 

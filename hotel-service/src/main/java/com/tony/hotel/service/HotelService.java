@@ -18,6 +18,6 @@ public interface HotelService extends IService<Hotel> {
 
     TableResultBean listPage(QueryParam param) throws IOException;
 
-    Map<String, List<String>> filters()throws IOException;
+    Map<String, List<String>> filters(QueryParam param)throws IOException;
 
 }

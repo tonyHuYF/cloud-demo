@@ -93,8 +93,10 @@ public class HotelServiceImpl extends ServiceImpl<HotelMapper, Hotel>
     }
 
     @Override
-    public Map<String, List<String>> filters() throws IOException {
+    public Map<String, List<String>> filters(QueryParam param) throws IOException {
         SearchRequest request = new SearchRequest("hotel");
+
+        handleBasicQueue(param, request);
 
         request.source().size(0);
 
