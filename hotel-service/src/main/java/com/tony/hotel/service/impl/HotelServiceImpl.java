@@ -21,6 +21,9 @@ import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author TonyHu
@@ -85,6 +90,45 @@ public class HotelServiceImpl extends ServiceImpl<HotelMapper, Hotel>
         TableResultBean resultBean = new TableResultBean(total, list);
 
         return resultBean;
+    }
+
+    @Override
+    public Map<String, List<String>> filters() throws IOException {
+        SearchRequest request = new SearchRequest("hotel");
+
+        request.source().aggregation(AggregationBuilders.terms("brandAgg").field("brand").size(100));
+        request.source().aggregation(AggregationBuilders.terms("cityAgg").field("city").size(100));
+        request.source().aggregation(AggregationBuilders.terms("starNameAgg").field("starName").size(100));
+
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+
+        Aggregations aggregations = response.getAggregations();
+
+        List<String> brandAgg = getAggByName(aggregations, "brandAgg");
+        List<String> cityAgg = getAggByName(aggregations, "cityAgg");
+        List<String> starNameAgg = getAggByName(aggregations, "starNameAgg");
+
+        Map<String, List<String>> map = new HashMap<>();
+        map.put("brand", brandAgg);
+        map.put("city", cityAgg);
+        map.put("starName", starNameAgg);
+
+        return map;
+    }
+
+    private List<String> getAggByName(Aggregations aggregations, String aggName) {
+        List<String> list = new ArrayList<>();
+
+        Terms terms = aggregations.get(aggName);
+
+        List<? extends Terms.Bucket> buckets = terms.getBuckets();
+
+        for (Terms.Bucket bucket : buckets) {
+            String key = bucket.getKeyAsString();
+            list.add(key);
+        }
+
+        return list;
     }
 
     private void handleBasicQueue(QueryParam param, SearchRequest request) {

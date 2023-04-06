@@ -6,6 +6,8 @@ import com.tony.hotel.domain.TableResultBean;
 import com.tony.hotel.domain.param.QueryParam;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author TonyHu
@@ -15,5 +17,7 @@ import java.io.IOException;
 public interface HotelService extends IService<Hotel> {
 
     TableResultBean listPage(QueryParam param) throws IOException;
+
+    Map<String, List<String>> filters()throws IOException;
 
 }

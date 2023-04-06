@@ -4,6 +4,7 @@ import com.tony.hotel.domain.TableResultBean;
 import com.tony.hotel.domain.param.QueryParam;
 import com.tony.hotel.domain.vo.HotelDoc;
 import com.tony.hotel.service.HotelService;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/hotel")
@@ -19,13 +22,47 @@ public class HotelController {
     @Resource
     private HotelService hotelService;
 
+    @Resource
+    private RestHighLevelClient restHighLevelClient;
+
 
     @PostMapping("/list")
     public TableResultBean<HotelDoc> listPage(@RequestBody QueryParam param) throws IOException {
-        TableResultBean result =   hotelService.listPage(param);
-        return  result;
+        TableResultBean result = hotelService.listPage(param);
+        return result;
     }
 
+    @PostMapping("/filters")
+    public Map<String, List<String>> filters() throws IOException {
+        Map<String, List<String>> result = hotelService.filters();
+        return result;
+    }
+
+
+//    @GetMapping("/agg")
+//    public String getAll() throws IOException {
+//
+//        SearchRequest request = new SearchRequest("hotel");
+//
+//        request.source().aggregation(AggregationBuilders.terms("brandAgg").field("brand").size(20));
+//
+//        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+//
+//        Aggregations aggregations = response.getAggregations();
+//
+//        Terms brandTerms = aggregations.get("brandAgg");
+//
+//        List<? extends Terms.Bucket> buckets = brandTerms.getBuckets();
+//
+//        String result = "";
+//
+//        for (Terms.Bucket bucket : buckets) {
+//            String brand = bucket.getKeyAsString();
+//            result += brand + ",";
+//        }
+//
+//        return result;
+//    }
 
 
 //    @GetMapping
