@@ -13,9 +13,16 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -40,17 +47,17 @@ public class HotelServiceImpl extends ServiceImpl<HotelMapper, Hotel>
 
         SearchRequest request = new SearchRequest("hotel");
 
-        if (ObjectUtil.isNotEmpty(param.getKey())) {
-            request.source().query(QueryBuilders.matchQuery("all", param.getKey()));
-        } else {
-            request.source().query(QueryBuilders.matchAllQuery());
+        handleBasicQueue(param, request);
+
+
+        if (ObjectUtil.isNotEmpty(param.getLocation())) {
+            request.source().sort(SortBuilders
+                    .geoDistanceSort("location", new GeoPoint(param.getLocation()))
+                    .order(SortOrder.ASC)
+                    .unit(DistanceUnit.KILOMETERS));
         }
 
         request.source().from((param.getPage() - 1) * param.getSize()).size(param.getSize());
-
-//        if (!StrUtil.equals(param.getSortBy(), "default")) {
-//            request.source().sort(param.getSortBy());
-//        }
 
         SearchResponse search = restHighLevelClient.search(request, RequestOptions.DEFAULT);
 
@@ -65,12 +72,57 @@ public class HotelServiceImpl extends ServiceImpl<HotelMapper, Hotel>
         for (SearchHit hit : hits) {
             String source = hit.getSourceAsString();
             HotelDoc hotelDoc = JSON.parseObject(source, HotelDoc.class);
+
+            Object[] sortValues = hit.getSortValues();
+
+            if (ObjectUtil.isNotEmpty(sortValues)) {
+                hotelDoc.setDistance(sortValues[0]);
+            }
+
             list.add(hotelDoc);
         }
 
         TableResultBean resultBean = new TableResultBean(total, list);
 
         return resultBean;
+    }
+
+    private void handleBasicQueue(QueryParam param, SearchRequest request) {
+        BoolQueryBuilder boolQuery = new BoolQueryBuilder();
+
+        if (ObjectUtil.isNotEmpty(param.getKey())) {
+            boolQuery.must(QueryBuilders.matchQuery("all", param.getKey()));
+        } else {
+            boolQuery.must(QueryBuilders.matchAllQuery());
+        }
+
+        if (ObjectUtil.isNotEmpty(param.getCity())) {
+            boolQuery.filter(QueryBuilders.termQuery("city", param.getCity()));
+        }
+
+        if (ObjectUtil.isNotEmpty(param.getBrand())) {
+            boolQuery.filter(QueryBuilders.termQuery("brand", param.getBrand()));
+        }
+
+        if (ObjectUtil.isNotEmpty(param.getStarName())) {
+            boolQuery.filter(QueryBuilders.termQuery("starName", param.getStarName()));
+        }
+
+        if (ObjectUtil.isNotEmpty(param.getMinPrice()) && ObjectUtil.isNotEmpty(param.getMaxPrice())) {
+            boolQuery.filter(QueryBuilders.rangeQuery("price").lte(param.getMaxPrice()).gte(param.getMinPrice()));
+        }
+
+
+        FunctionScoreQueryBuilder functionScoreQuery =
+                QueryBuilders.functionScoreQuery(
+                        boolQuery,
+                        new FunctionScoreQueryBuilder.FilterFunctionBuilder[]{
+                                new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                                        QueryBuilders.termQuery("isAD", true),
+                                        ScoreFunctionBuilders.weightFactorFunction(10))
+                        });
+
+        request.source().query(functionScoreQuery);
     }
 }
 

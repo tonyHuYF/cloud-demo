@@ -17,4 +17,15 @@ public class QueryParam {
 
     private String sortBy;
 
+    private String city;
+
+    private String brand;
+
+    private String starName;
+
+    private Integer maxPrice;
+
+    private Integer minPrice;
+
+    private String location;
 }
