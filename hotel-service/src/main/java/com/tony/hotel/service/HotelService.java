@@ -22,4 +22,8 @@ public interface HotelService extends IService<Hotel> {
 
     List<String> getSuggestions(String prefix) throws IOException;
 
+    void insertById(Long id);
+
+    void deleteById(Long id);
+
 }

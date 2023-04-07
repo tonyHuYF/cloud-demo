@@ -1,5 +1,6 @@
 package com.tony.hotel.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,12 +10,15 @@ import com.tony.hotel.domain.param.QueryParam;
 import com.tony.hotel.domain.vo.HotelDoc;
 import com.tony.hotel.mapper.HotelMapper;
 import com.tony.hotel.service.HotelService;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
@@ -34,10 +38,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author TonyHu
@@ -203,6 +204,49 @@ public class HotelServiceImpl extends ServiceImpl<HotelMapper, Hotel>
                         });
 
         request.source().query(functionScoreQuery);
+    }
+
+    @Override
+    public void insertById(Long id) {
+        try {
+            Hotel hotel = getById(id);
+            HotelDoc hotelDoc = BeanUtil.copyProperties(hotel, HotelDoc.class);
+
+            hotelDoc.setLocation(hotel.getLatitude() + ", " + hotel.getLongitude());
+
+            if (hotel.getBusiness().contains("、")) {
+                String[] split = hotel.getBusiness().split("、");
+                hotelDoc.getSuggestion().add(hotel.getBrand());
+                hotelDoc.getSuggestion().addAll(Arrays.asList(split));
+
+            } else if (hotel.getBusiness().contains("/")) {
+                String[] split2 = hotel.getBusiness().split("/");
+                hotelDoc.getSuggestion().add(hotel.getBrand());
+                hotelDoc.getSuggestion().addAll(Arrays.asList(split2));
+
+            } else {
+                hotelDoc.getSuggestion().addAll(Arrays.asList(hotel.getBusiness(), hotel.getBrand()));
+            }
+
+            IndexRequest request = new IndexRequest("hotel").id(id.toString());
+
+            request.source(JSON.toJSONString(hotelDoc), XContentType.JSON);
+
+            restHighLevelClient.index(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        try {
+            DeleteRequest request = new DeleteRequest("hotel", id.toString());
+
+            restHighLevelClient.delete(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
