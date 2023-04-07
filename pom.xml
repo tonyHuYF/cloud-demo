@@ -163,6 +163,7 @@
         <module>feign-api</module>
         <module>gateway</module>
         <module>hotel-service</module>
+        <module>hotel-admin</module>
     </modules>
 
 </project>
