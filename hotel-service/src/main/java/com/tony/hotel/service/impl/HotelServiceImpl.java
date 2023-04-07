@@ -26,6 +26,10 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.search.suggest.Suggest;
+import org.elasticsearch.search.suggest.SuggestBuilder;
+import org.elasticsearch.search.suggest.SuggestBuilders;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -118,6 +122,34 @@ public class HotelServiceImpl extends ServiceImpl<HotelMapper, Hotel>
         map.put("starName", starNameAgg);
 
         return map;
+    }
+
+    @Override
+    public List<String> getSuggestions(String prefix) throws IOException {
+        SearchRequest request = new SearchRequest("hotel");
+
+        request.source().suggest(new SuggestBuilder().addSuggestion(
+                "suggestions",
+                SuggestBuilders.completionSuggestion("suggestion")
+                        .prefix(prefix)
+                        .skipDuplicates(true)
+                        .size(10)));
+
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+
+        Suggest suggest = response.getSuggest();
+
+        CompletionSuggestion completionSuggestion = suggest.getSuggestion("suggestions");
+
+        List<CompletionSuggestion.Entry.Option> options = completionSuggestion.getOptions();
+
+        List<String> result = new ArrayList<>();
+
+        for (CompletionSuggestion.Entry.Option option : options) {
+            result.add(option.getText().toString());
+        }
+
+        return result;
     }
 
     private List<String> getAggByName(Aggregations aggregations, String aggName) {

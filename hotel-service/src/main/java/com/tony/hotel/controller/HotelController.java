@@ -5,10 +5,7 @@ import com.tony.hotel.domain.param.QueryParam;
 import com.tony.hotel.domain.vo.HotelDoc;
 import com.tony.hotel.service.HotelService;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -37,6 +34,43 @@ public class HotelController {
         Map<String, List<String>> result = hotelService.filters(param);
         return result;
     }
+
+
+    @GetMapping("/suggestion")
+    private List<String> getSuggestions(@RequestParam("key")String prefix) throws IOException {
+        return hotelService.getSuggestions(prefix);
+    }
+
+
+//    @GetMapping("/suggestion")
+//    public String list() throws IOException {
+//
+//        SearchRequest request = new SearchRequest("hotel");
+//
+//        request.source().suggest(new SuggestBuilder().addSuggestion(
+//                "suggestions",
+//                SuggestBuilders.completionSuggestion("suggestion")
+//                        .prefix("sd")
+//                        .skipDuplicates(true)
+//                        .size(20)));
+//
+//        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+//
+//        Suggest suggest = response.getSuggest();
+//
+//        CompletionSuggestion completionSuggestion = suggest.getSuggestion("suggestions");
+//
+//        List<CompletionSuggestion.Entry.Option> options = completionSuggestion.getOptions();
+//
+//        String result = "";
+//
+//        for (CompletionSuggestion.Entry.Option option : options) {
+//            String text = option.getText().toString();
+//            result += text + ", ";
+//        }
+//
+//        return result;
+//    }
 
 
 //    @GetMapping("/agg")
@@ -185,10 +219,15 @@ public class HotelController {
 //            hotelDoc.setLocation(p.getLatitude() + ", " + p.getLongitude());
 //
 //            if (p.getBusiness().contains("、")) {
-//
 //                String[] split = p.getBusiness().split("、");
 //                hotelDoc.getSuggestion().add(p.getBrand());
 //                hotelDoc.getSuggestion().addAll(Arrays.asList(split));
+//
+//            } else if (p.getBusiness().contains("/")) {
+//                String[] split2 = p.getBusiness().split("/");
+//                hotelDoc.getSuggestion().add(p.getBrand());
+//                hotelDoc.getSuggestion().addAll(Arrays.asList(split2));
+//
 //            } else {
 //                hotelDoc.getSuggestion().addAll(Arrays.asList(p.getBusiness(), p.getBrand()));
 //            }

@@ -20,4 +20,6 @@ public interface HotelService extends IService<Hotel> {
 
     Map<String, List<String>> filters(QueryParam param)throws IOException;
 
+    List<String> getSuggestions(String prefix) throws IOException;
+
 }
