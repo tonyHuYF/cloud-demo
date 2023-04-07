@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -56,6 +59,8 @@ public class HotelDoc {
     private Object distance;
 
     private Boolean isAD;
+
+    private List<String> suggestion = new ArrayList<>();
 
 
 }

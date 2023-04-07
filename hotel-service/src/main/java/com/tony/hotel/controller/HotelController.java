@@ -65,7 +65,7 @@ public class HotelController {
 //    }
 
 
-//    @GetMapping
+    //    @GetMapping
 //    public List<Hotel> getAll() throws IOException {
 //        List<Hotel> list = hotelService.list();
 //        return list;
@@ -183,6 +183,16 @@ public class HotelController {
 //        hotels.forEach(p -> {
 //            HotelDoc hotelDoc = BeanUtil.copyProperties(p, HotelDoc.class);
 //            hotelDoc.setLocation(p.getLatitude() + ", " + p.getLongitude());
+//
+//            if (p.getBusiness().contains("、")) {
+//
+//                String[] split = p.getBusiness().split("、");
+//                hotelDoc.getSuggestion().add(p.getBrand());
+//                hotelDoc.getSuggestion().addAll(Arrays.asList(split));
+//            } else {
+//                hotelDoc.getSuggestion().addAll(Arrays.asList(p.getBusiness(), p.getBrand()));
+//            }
+//
 //
 //            request.add(new IndexRequest("hotel").id(p.getId().toString())
 //                    .source(JSON.toJSONString(hotelDoc), XContentType.JSON));
