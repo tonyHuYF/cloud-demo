@@ -1,5 +1,6 @@
 package com.tony.order.service.service.impl;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tony.feign.client.UserClient;
 import com.tony.feign.domain.User;
@@ -49,6 +50,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order>
 //
 //        return order;
 //    }
+
+
+    @Override
+    @SentinelResource("goods")
+    public void queryGoods() {
+        System.out.println("查询商品！");
+    }
 }
 
 

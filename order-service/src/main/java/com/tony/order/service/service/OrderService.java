@@ -12,4 +12,6 @@ public interface OrderService extends IService<Order> {
 
     Order getOrderWithUser(Long id);
 
+    void queryGoods();
+
 }

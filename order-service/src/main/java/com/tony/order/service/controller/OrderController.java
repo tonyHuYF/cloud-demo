@@ -1,5 +1,6 @@
 package com.tony.order.service.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.tony.order.service.domain.Order;
 import com.tony.order.service.service.OrderService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -68,20 +69,38 @@ public class OrderController {
     public void testMQ() throws InterruptedException {
         String queue = "object.queue";
 
-        Map<String,Object> map = new HashMap<>();
-        map.put("name","托尼");
-        map.put("age",21);
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "托尼");
+        map.put("age", 21);
 
-        rabbitTemplate.convertAndSend(queue,map);
+        rabbitTemplate.convertAndSend(queue, map);
 
         System.out.println("发送mq_object成功");
     }
 
 
+    @SentinelResource("hot")
     @GetMapping("/{id}")
     public Order getOrderWithUser(@PathVariable Long id) {
         Order order = orderService.getOrderWithUser(id);
         return order;
+    }
+
+    @GetMapping("/query")
+    public String query() {
+        orderService.queryGoods();
+        return "查询订单成功！";
+    }
+
+    @GetMapping("/save")
+    public String save() {
+        orderService.queryGoods();
+        return "插入订单成功！";
+    }
+
+    @GetMapping("update")
+    public String update() {
+        return "更新订单成功！";
     }
 
 }

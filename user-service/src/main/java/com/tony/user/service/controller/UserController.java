@@ -30,8 +30,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable Long id, @RequestHeader(value = "Truth", required = false) String truth) {
-        System.out.println(truth);
+    public User getById(@PathVariable Long id, @RequestHeader(value = "Truth", required = false) String truth) throws InterruptedException {
+        if(id.intValue()==1){
+            Thread.sleep(60);
+        }else if(id.intValue()==2){
+            throw new RuntimeException("熔断异常，抛出异常！！");
+        }
+
         User user = userService.getById(id);
         return user;
     }
